@@ -4,67 +4,111 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <wait.h>
+#include <semaphore.h>
 
-pthread_mutex_t key_speak,key_shouting,key_playing;
+//pthread_mutex_t key_work;
+int counter=0;
+sem_t sem;
 
-// functions "tasks"
+void* (*ergasies[3])(void*); //pointers poypairnoyns san parametro ena arg typou (void*) kai epistrefoun enan pointer typou (void*)
+
+   // functions "tasks"
 void* speak(void* arg)
 {
-    pthread_mutex_lock(&key_speak);
-  printf("I am speaking!\n");
+    //pthread_mutex_lock(&key_speak);
+  printf("Thread %d:I am speaking!\n",*(int*)arg);
   fflush(stdout);
   sleep(1);
-  pthread_mutex_unlock(&key_speak);
+  counter++;
+  //pthread_mutex_unlock(&key_speak);
 }
 
 void *shouting(void* arg)
 {
-    pthread_mutex_lock(&key_shouting);
-    printf("I am shouting!\n");
+    //pthread_mutex_lock(&key_shouting);
+    printf("Thread %d:I am shouting!\n",*(int*)arg);
       fflush(stdout);   
     sleep(1);
-   pthread_mutex_unlock(&key_shouting);
+    counter++;
+   //pthread_mutex_unlock(&key_shouting);
 }
 
 void *playing(void* arg)
 {
-    pthread_mutex_lock(&key_playing);
-    printf("I am playing!\n");
+    //pthread_mutex_lock(&key_playing);
+    printf("Thread %d:I am playing!\n",*(int*)arg);
     fflush(stdout);
     sleep(1);
-    pthread_mutex_unlock(&key_playing);
+    counter++;
+    //pthread_mutex_unlock(&key_playing);
+}
+
+
+void* work(void* arg)
+{
+    int number;    
+ 
+    while (counter<10)
+    {
+        sem_wait(&sem);
+      // pthread_mutex_lock(&key_work);
+         number=counter%3;
+        // sleep(2);
+
+         ergasies[number](arg);
+           
+        // counter++;
+         
+         sem_post(&sem);
+       //pthread_mutex_unlock(&key_work); 
+       sleep(1);
+    }
+    
+   
+
 }
 
 
 int main(void)
 {
 
-    pthread_mutex_init(&key_playing,NULL);
-    pthread_mutex_init(&key_shouting,NULL);
-    pthread_mutex_init(&key_speak,NULL);
-//array with tasks    
-void* (*ergasies[3])(void*); //pointers poypairnoyns san parametro ena arg typou (void*) kai epistrefoun enan pointer typou (void*)
+    sem_init(&sem,0,1);
+//pthread_mutex_init(&key_work,NULL);
 ergasies[0]=speak;
 ergasies[1]=shouting;
 ergasies[2]=playing;
+   
+//array with tasks    
+
 
 //workers-threads
-pthread_t  workers[3]; 
+pthread_t  workers[2]; 
 
-for (int i = 0; i < 3; i++)
+
+for (int i = 0; i < 2; i++)
 {
-    pthread_create(&workers[i],NULL,ergasies[i],NULL);
+    int *x=malloc(sizeof(int));
+    if (x==NULL)
+    {
+        perror("Error at malloc!\n");
+        return 1;
+        /* code */
+    }
+    *x=i+1;
+    
+    
+    pthread_create(&workers[i],NULL,&work,x);
     /* code */
 }
 
-for (int i = 0; i < 3; i++)
+for (int i = 0; i < 2; i++)
 {
     pthread_join(workers[i],NULL);
     /* code */
 }
 
-pthread_mutex_destroy(&key_playing);
-pthread_mutex_destroy(&key_shouting);
-pthread_mutex_destroy(&key_speak);
+
+sem_destroy(&sem);
+//pthread_mutex_destroy(&key_work);
     return 0;
 }
