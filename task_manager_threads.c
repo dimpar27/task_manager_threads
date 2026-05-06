@@ -18,7 +18,7 @@ void* speak(void* arg)
     //pthread_mutex_lock(&key_speak);
   printf("Thread %d:I am speaking!\n",*(int*)arg);
   fflush(stdout);
-  sleep(1);
+  //sleep(1);
   counter++;
   //pthread_mutex_unlock(&key_speak);
 }
@@ -28,7 +28,7 @@ void *shouting(void* arg)
     //pthread_mutex_lock(&key_shouting);
     printf("Thread %d:I am shouting!\n",*(int*)arg);
       fflush(stdout);   
-    sleep(1);
+    //sleep(1);
     counter++;
    //pthread_mutex_unlock(&key_shouting);
 }
@@ -38,7 +38,7 @@ void *playing(void* arg)
     //pthread_mutex_lock(&key_playing);
     printf("Thread %d:I am playing!\n",*(int*)arg);
     fflush(stdout);
-    sleep(1);
+    //sleep(1);
     counter++;
     //pthread_mutex_unlock(&key_playing);
 }
